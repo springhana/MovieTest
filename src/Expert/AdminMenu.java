@@ -110,5 +110,7 @@ public class AdminMenu extends AbstractMenu { //관리자 메뉴
 		}
 
 	}
+	
+	
 
 }

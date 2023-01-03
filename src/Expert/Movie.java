@@ -78,10 +78,13 @@ public class Movie {
 				movie = new Movie(Long.parseLong(temp[0]),temp[1],temp[2]);
 				break;
 			}
-		}
-		
+		}		
 		br.close();
 		return movie;
+	}
+	
+	public String getTitle() {
+		return title;
 	}
 	
 	private String toFileString() {
