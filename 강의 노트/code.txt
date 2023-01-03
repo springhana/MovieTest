@@ -1,0 +1,604 @@
+MainAppOnText.java
+
+package Expert;
+
+public class MainAppOnText {
+
+	public static void main(String[] args) {
+		System.out.println("text ±â¹Ý.");
+		
+		Menu menu = MainMenu.getInstance();
+		
+		while( menu != null) {
+			menu.print();
+			menu = menu.next();
+		}
+		System.out.println("?????????????????????? ??????????????????????.");
+
+	}
+
+}
+
+-----------------------------------------------------------------------------------------------------------------
+Menu.java
+
+package Expert;
+
+public interface Menu {
+	void print();
+	Menu next();
+}
+
+
+
+---------------------------------------------------------------------------------------------------------------
+AbstractMenu.java
+
+package Expert;
+import java.util.Scanner;
+
+public abstract class AbstractMenu implements Menu {
+	protected String menuText;
+	protected Menu prevMenu;
+	protected static final Scanner sc = new Scanner(System.in);
+	
+	public AbstractMenu(String menuText, Menu prevMenu) {
+		this.menuText = menuText;
+		this.prevMenu = prevMenu;
+	}
+	
+	@Override
+	public void print() {
+		System.out.println("\n" + menuText);
+
+	}
+
+	public void setPrevMenu(Menu prevMenu) {
+		this.prevMenu = prevMenu;
+	}
+
+}
+
+
+----------------------------------------------------------------------------------------------------------
+MainMenu.java
+
+package Expert;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+public class MainMenu extends AbstractMenu {
+	private static final MainMenu instance = new MainMenu(null);
+	private static final String MAIN_MENU_TEXT = 
+				"1. ??? ???????\n" +
+				"2. ???? ??????\n" +
+				"3. ???? ??????\n" +
+				"4. ?????? ????? ???\n" +
+				"q. ????\n\n" +
+				"????? ?????????:";
+	
+	private MainMenu(Menu prevMenu) {
+		super(MAIN_MENU_TEXT, prevMenu);
+		// TODO Auto-generated constructor stub
+	}
+
+	public static MainMenu getInstance() {
+		return instance;
+	}
+	@Override
+	public Menu next() {
+		switch(sc.nextLine()) {
+		case "1": reserve();
+				  return this;
+		case "2": checkReservation();
+		  		  return this;
+		case "3": cancelReservation();
+				  return this;
+		case "4": if( !checkAdminPassword()) {
+				    	System.out.println(">>??¬Û???? ???????.");
+				    	return this;
+				  }
+				  AdminMenu adminMenu = AdminMenu.getInstance();
+				  adminMenu.setPrevMenu(this);
+				  return adminMenu;
+		case "q": return prevMenu;
+		default: return this;
+		}
+	}
+	
+	private boolean checkAdminPassword() {
+		System.out.println("?????? ??¬Û???? ????????: ");
+		return "abcd".equals(sc.nextLine());
+	}
+	
+	private void checkReservation() {
+		System.out.println("??????? ???: ");
+		
+		try {
+			Reservation r = Reservation.findById(sc.nextLine());
+			if( r != null) {
+				System.out.printf(">> [??? ???] %s \n", r.toString());
+			}else {
+				System.out.println(">>???? ?????? ???????.");
+			}
+		}catch(IOException e) {
+			System.out.println("???? ????¢¯??? ?????? ????????.");
+		}
+	}
+	
+	private void cancelReservation() {
+		System.out.println("??????? ???: ");
+		try {
+			Reservation canceled = Reservation.cancel(sc.nextLine());
+			if( canceled != null) {
+				System.out.printf(">> [??? ???] %s?? ????? ??????????. \n", canceled.toString());
+			}else {
+				System.out.println(">>???? ?????? ???????.");
+			}
+		}catch(IOException e) {
+			System.out.println("???? ????¢¯??? ?????? ????????.");
+		}
+
+	}
+	
+	private void reserve() {
+		try {
+			ArrayList<Movie> movies = Movie.findAll();
+			do {
+				for(int i=0; i < movies.size(); i++) {
+					System.out.printf("%s\n", movies.get(i).toString());
+				}
+				System.out.print("?????? ????? ?????????(??? ????(Enter?): ");
+				String movieIdStr = sc.nextLine();
+				if( movieIdStr == null || movieIdStr.isEmpty()) {System.out.println(movieIdStr);return; }
+				Movie m = Movie.findById(movieIdStr);
+				
+				if( m != null) {
+					ArrayList<Reservation> reservations = Reservation.findByMovieId(movieIdStr);
+					Seats seats = new Seats(reservations);
+					seats.show();
+					System.out.print("?¨ù??? ?????????(??: E-9): ");
+					String seatName = sc.nextLine();
+					seats.mark(seatName);
+					Reservation r = new Reservation(Long.parseLong(movieIdStr), m.getTitle(), seatName);
+					r.save();
+					System.out.println(">>????? ??????????.");
+					System.out.printf(">>?????: %d\n", r.getId());
+				}
+				else 
+					System.out.println("????? ???ID?? ?????.??? ????????.");
+			}
+			while(true);
+		}catch(IOException e) {
+			System.out.println("???? ????¢¯??? ?????? ????????.");
+		}catch(Exception e) {
+			System.out.printf(">> ????? ????????????: %s\n", e.getMessage());
+		}
+	}
+
+}
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+AdminMenu.java
+
+package Expert;
+import java.io.IOException;
+import java.util.ArrayList;
+
+public class AdminMenu extends AbstractMenu {
+	private static final AdminMenu instance = new AdminMenu(null);
+	private static final String ADMIN_MENU_TEXT = 
+				"1. ??? ??????\n" +
+				"2. ??? ??? ????\n" +
+				"3. ??? ???????\n" +
+				"4. ???? ??? ????\n" +
+				"5. ???? ???????\n" +
+				"b. ???? ????? ???\n\n" +
+				"????? ?????????:";
+	
+	private AdminMenu(Menu prevMenu) {
+		super(ADMIN_MENU_TEXT, prevMenu);
+		// TODO Auto-generated constructor stub
+	}
+
+	public static AdminMenu getInstance() {
+		return instance;
+	}
+	
+	@Override
+	public Menu next() {
+		switch(sc.nextLine()) {
+		case "1": createMovie();
+				  return this;
+		case "2": printAllMovies();
+		  		  return this;
+		case "3": deleteMovie();
+				  return this;
+		case "4": printAllReservations();
+		  		  return this;
+		case "5": deleteRervation();
+		  		  return this;
+		case "b": return prevMenu;
+		default: return this;
+		}
+
+	}
+
+	private void printAllMovies() {
+		try {
+			ArrayList<Movie> movies = Movie.findAll();
+			System.out.println();
+			for(int i=0; i < movies.size(); i++) {
+				System.out.printf("%s\n", movies.get(i).toString());
+			}
+		}catch(IOException e) {
+			System.out.println("?????? ????? ??????????.");
+		}
+	}
+	
+	private void createMovie() {
+		System.out.print("????:");
+		String title = sc.nextLine();
+		System.out.print("??:");
+		String genre = sc.nextLine();
+		Movie movie = new Movie(title, genre);
+		try {
+			movie.save();
+			System.out.println(">>??????????.");
+		} catch(IOException e) {
+			System.out.println(">> ??????????.");
+		}	
+	}
+	
+	private void deleteMovie() {
+		String movieIdStr;
+		printAllMovies();
+		System.out.print("?????? ????? ?????????: ");
+		movieIdStr = sc.nextLine();
+		try {
+			Movie.delete(movieIdStr);
+			System.out.println(">>????????????.");
+			System.out.print(">>?????? ????? ???o? ???? ???? ????????(yes/no): ");
+			if(sc.nextLine().equalsIgnoreCase("yes"))
+				Reservation.relatedReservationCancel(movieIdStr);
+		} catch(IOException e) {
+			System.out.println(">> ?????? ??????????.");
+		}	
+	}
+	
+	private void printAllReservations() {
+		try {
+			ArrayList<Reservation> reservations = Reservation.findAll();
+			System.out.println();
+			for(int i=0; i < reservations.size(); i++) {
+				System.out.printf("%s\n", reservations.get(i).toString());
+			}
+		}catch(IOException e) {
+			System.out.println("?????? ????? ??????????.");
+		}
+	}
+
+	private void deleteRervation(){
+		System.out.println("??????? ???: ");
+		try {
+			Reservation canceled = Reservation.cancel(sc.nextLine());
+			if( canceled != null) {
+				System.out.printf(">> [??? ???] %s?? ????? ??????????. \n", canceled.toString());
+			}else {
+				System.out.println(">>???? ?????? ???????.");
+			}
+		}catch(IOException e) {
+			System.out.println("???? ????¢¯??? ?????? ????????.");
+		}
+
+	}
+}
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+Movie.java
+
+package Expert;
+import java.io.*;
+import java.time.Instant;
+import java.util.ArrayList;
+
+public class Movie {
+	private long id;
+	private String title;
+	private String genre;
+	private static final File file = new File("movies.txt");
+	
+	public Movie(long id, String title, String genre) {
+		this.id = id;
+		this.title = title;
+		this.genre = genre;
+	}
+	
+	public static ArrayList<Movie> findAll() throws IOException {
+		ArrayList<Movie> movies = new ArrayList<Movie>();
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String line = null;
+		
+		while( (line = br.readLine()) != null) {
+			String[] temp = line.split(",");
+			Movie m = new Movie(Long.parseLong(temp[0]), temp[1], temp[2]);
+			movies.add(m);
+		}
+		br.close();
+		return movies;
+	}
+	
+	public String toString() {
+		return String.format("[%d]: %s(%s)", id, title, genre);
+	}
+	
+	public Movie( String title, String genre) {
+		this.id = Instant.now().getEpochSecond();
+		this.title = title;
+		this.genre = genre;
+	}
+	
+	public void save() throws IOException {
+		FileWriter fw = new FileWriter(file, true);
+		fw.write(this.toFileString() + "\n");
+		fw.close();
+	}
+	
+	private String toFileString() {
+		return String.format("%d,%s,%s", id, title, genre);
+	}
+	
+	public static void delete(String movieIdStr) throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String text = "";
+		String line = null;
+		
+		while((line=br.readLine()) != null) {
+			String[] temp = line.split(",");
+			if(movieIdStr.equals(temp[0])) {
+				continue;
+			}
+			text += line+"\n";
+		}
+		br.close();
+		
+		FileWriter fw = new FileWriter(file);
+		fw.write(text);
+		fw.close();
+	}
+	
+	public static Movie findById(String movieIdStr) throws IOException {
+		Movie movie = null;
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String line = null;
+		
+		while((line=br.readLine()) != null) {
+			String[] temp = line.split(",");
+			if(movieIdStr.equals(temp[0])) {
+				movie = new Movie(Long.parseLong(temp[0]),temp[1],temp[2]);
+				break;
+			}
+		}
+		
+		br.close();
+		return movie;
+	}
+	
+	public String getTitle() {
+		return title;
+	}
+	
+}
+
+--------------------------------------------------------------
+Reservation.java
+
+package Expert;
+import java.io.*;
+import java.time.Instant;
+import java.util.ArrayList;
+
+public class Reservation {
+	private long id;
+	private long movieId;
+	private String movieTitle;
+	private String seatName;
+	private static final File file = new File("reservations.txt");
+	
+	public Reservation(long id, long movieId, String movieTitle, String seatName) {
+		this.id = id;
+		this.movieId = movieId;
+		this.movieTitle = movieTitle;
+		this.seatName = seatName;
+	}
+
+	public static Reservation findById(String reservationId) throws IOException {
+		Reservation r = null;
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String line = null;
+		
+		while( (line = br.readLine()) != null) {
+			String[] temp = line.split(",");
+			if(reservationId.equals(temp[0])) {
+				r = new Reservation(Long.parseLong(temp[0]), Long.parseLong(temp[1]), temp[2], temp[3]);
+				break;
+			}
+		}
+		br.close();
+		return r;
+	}
+	
+	public static ArrayList<Reservation> findAll() throws IOException {
+		ArrayList<Reservation> reservations = new ArrayList<Reservation>();
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String line = null;
+		
+		while( (line = br.readLine()) != null) {
+			String[] temp = line.split(",");
+			Reservation r = new Reservation(Long.parseLong(temp[0]), Long.parseLong(temp[1]), temp[2], temp[3]);
+			reservations.add(r);
+		}
+		br.close();
+		return reservations;
+	}
+
+	
+	public String toString() {
+		return String.format("??????: %s, ???: %s, ?¨ù?: %s", id, movieTitle, seatName);
+	}
+	
+	public static Reservation cancel(String reservationId) throws IOException {
+		Reservation canceled = null;
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String text = "";
+		String line = null;
+		
+		while((line=br.readLine()) != null) {
+			String[] temp = line.split(",");
+			if(reservationId.equals(temp[0])) {
+				canceled = new Reservation(Long.parseLong(temp[0]), Long.parseLong(temp[1]), temp[2], temp[3]);
+				continue;
+			}
+			text += line + "\r\n";
+		}
+		br.close();
+		
+		FileWriter fw = new FileWriter(file);
+		fw.write(text);
+		fw.close();
+		return canceled;
+	}
+
+	public static void relatedReservationCancel(String movieIdStr) throws IOException {
+		Reservation canceled = null;
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String text = "";
+		String line = null;
+		
+		while((line=br.readLine()) != null) {
+			String[] temp = line.split(",");
+			if(movieIdStr.equals(temp[1])) {
+				canceled = new Reservation(Long.parseLong(temp[0]), Long.parseLong(temp[1]), temp[2], temp[3]);
+				System.out.printf(">> [??? ???] %s?? ????? ??????????. \n", canceled.toString());
+				continue;
+			}
+			text += line + "\r\n";
+		}
+		br.close();
+		
+		FileWriter fw = new FileWriter(file);
+		fw.write(text);
+		fw.close();
+	}
+
+	
+	public static ArrayList<Reservation> findByMovieId(String movieIdStr) throws IOException {
+		ArrayList<Reservation> reservations = new ArrayList<Reservation>();
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String line = null;
+		
+		while((line=br.readLine()) != null) {
+			String[] temp = line.split(",");
+			if(movieIdStr.equals(temp[1])) {
+				long id = Long.parseLong(temp[0]);
+				long movieId = Long.parseLong(temp[1]);
+				String movieTitle = temp[2];
+				String seatName = temp[3];
+				Reservation r =  new Reservation(id, movieId, movieTitle, seatName);
+				reservations.add(r);
+				
+			}
+		}
+		br.close();
+		return reservations;
+	}
+	
+	public Reservation(long movieId, String movieTitle, String seatName) {
+		this.id = Instant.now().toEpochMilli();
+		this.movieId = movieId;
+		this.movieTitle = movieTitle;
+		this.seatName = seatName;
+	}
+	
+	public String getSeatName() {
+		return seatName;
+	}
+	
+	public void save() throws IOException {
+		FileWriter fw = new FileWriter(file, true);
+		fw.write(this.toFileString()+"\r\n");
+		fw.close();
+	}
+	
+	private String toFileString() {
+		return String.format("%d,%d,%s,%s", id, movieId, movieTitle, seatName);
+	}
+	
+	public long getId() {
+		return id;
+	}
+	
+}
+
+
+
+-------------------------------------------------------
+seats.java
+
+package Expert;
+import java.util.ArrayList;
+import java.util.regex.Pattern;
+
+public class Seats {
+	public static final int MAX_ROW = 5;
+	public static final int MAX_COL = 9;
+	private String[][] map = new String[MAX_ROW][MAX_COL];
+	
+	
+	public Seats(ArrayList<Reservation> reservations)  throws Exception {
+		for(int i =0; i < MAX_ROW; i++) {
+			for(int j = 0; j < MAX_COL; j++) {
+				map[i][j] = "o";
+			}
+		}
+		
+		for(int i=0; i < reservations.size(); i++)	{
+			Reservation r = reservations.get(i);
+			String seatName = r.getSeatName();
+			mark(seatName);
+		}
+	}
+	
+	public void show() {
+		System.out.println("----------------------");
+		System.out.println("     S C R E E N   ");
+		System.out.println("----------------------");
+		for(int i =0; i < MAX_ROW; i++) {
+			System.out.printf("%c ", 'A'+i);
+			for(int j = 0; j < MAX_COL; j++) {
+				System.out.printf(" %s", map[i][j]);
+			}
+			System.out.println();
+		}
+		System.out.println("   1 2 3 4 5 6 7 8 9");
+	}
+
+	public void mark(String seatName)  throws Exception {
+		String pt = "^[A-E]-[1-9]$";
+		System.out.println(seatName);
+		if( !Pattern.matches(pt, seatName)) throw new Exception("????? ??? ???????.");
+		char[] temp = seatName.toCharArray();
+		int row = temp[0] -'A';
+		int col = temp[2] - '1';
+		if( "x".equals(map[row][col])) {
+			throw new Exception("??? ????? ?¨ù?????.");
+		}
+		map[row][col] = "x";
+	}
+	
+}
+
+
