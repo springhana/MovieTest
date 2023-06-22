@@ -91,7 +91,7 @@
 
 ![image](https://github.com/springhana/MovieTest/assets/97121074/676e60e9-9212-4aae-b384-05bc04cd436d)
 
-<h3>※ 예매 삭제 </h3>
+<h3>※ 예매 삭제 후</h3>
 
 ![image](https://github.com/springhana/MovieTest/assets/97121074/bfa4250d-9c12-4bd1-96d9-6b374226791f)
 
