@@ -1,0 +1,840 @@
+startSwing.java
+___________________________________
+
+package ExpertWin;
+
+import ExpertWin.Movie1;
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+
+
+public class StartSwing extends JFrame {
+	static JPanel contentPane;
+	static MenuActionListener1 listener;
+	static MovieDropListener listenerForDrop;
+	static JPanel panel;
+	static JPanel initPanel;
+	static JPanel reservePanel;
+	static JPanel reserveCheckPanel;
+	static JPanel cancelPanel;
+	static JPanel loginPanel;
+	static JPanel mListPanel;
+	static JPanel mMovieAddPanel;
+	static JPanel mMovieDropPanel;
+	static String[] MAIN_MENU_TEXT = {"예매", "관리자", "종료"};
+	static String[] RESV_MENU_TEXT = {"예매하기","확인하기","취소하기"};
+	static String[] MAN_MENU_TEXT =  {"로그인","영화목록","영화추가","영화삭제","예매목록","예매삭제"};
+	static String SYS_MENU_TEXT = "종료";
+	static boolean mode = false;    //관리자 모드 유무  true/관리자모드
+	static JMenu mainMenu[] = new JMenu[3];
+	static JMenuItem[] uMenuItem = new JMenuItem[3];
+	static JMenuItem[] mMenuItem  = new JMenuItem[6];
+	static JMenuItem xMenuItem;
+	static JLabel headLabel; 
+	static JPanel seatPanel;
+	static JList<String> movieList, movieListForDrop;
+	static JScrollPane movieListScroll;
+	static String movieId,movieName;
+	static JLabel rcHeadLabel, rcGuideLabel;                      //reserveCheckPanel용
+	static JPanel rcPanel;
+	static JTextField rcTextField;
+	static JLabel canHeadLabel, canGuideLabel;                      //cancelPanel용
+	static JPanel canPanel;
+	static JTextField canTextField;
+	static JLabel loginHeadLabel, loginGuideLabel;                      //loginPanel용
+	static JPanel logPanel;
+	static JPasswordField adminPwd;
+	static JLabel mHeadLabel;                                            //Manager movie List Panel...mListPanel용
+	static JScrollPane mMovieListScroll;
+	static JLabel mMovieAddHeadLabel, mMovieAddMNameGuideLabel,mMovieAddMGanreGuideLabel;                      //manager ... movie add panel용
+	static JTextField mMovieNameTextField, mMovieGenreTextField;
+	static JPanel mMoviePanel;
+	static JLabel mMovieDropHeadLabel;                                            //Manager movie Drop Panel...mListPanel용
+
+	
+ 	static void createMenu() {
+		JMenuBar menuBar = new JMenuBar();
+		contentPane.add(menuBar,BorderLayout.NORTH);  //c);
+		
+		for(int i =0; i < MAIN_MENU_TEXT.length; i++) {
+			mainMenu[i] = new JMenu(MAIN_MENU_TEXT[i]);
+			menuBar.add(mainMenu[i]);	
+			if( i== 0) {
+				for(int j =0; j < RESV_MENU_TEXT.length; j++) {
+						uMenuItem[j] = new JMenuItem(RESV_MENU_TEXT[j]);
+						if(mode)
+							uMenuItem[j].setEnabled(false);
+						uMenuItem[j].addActionListener(listener);
+						mainMenu[i].add(uMenuItem[j]);
+				}
+			}
+			else if(i == 1) {				
+				for(int j =0; j < MAN_MENU_TEXT.length; j++) {
+					mMenuItem[j] = new JMenuItem(MAN_MENU_TEXT[j]);
+					mMenuItem[j].addActionListener(listener);
+					if(j!=0 & !mode ) {
+						mMenuItem[j].setEnabled(false);
+					}
+					if(mode) {
+						mMenuItem[j].setEnabled(true);
+						mMenuItem[0].setText("로그아웃");
+						
+					}
+					mainMenu[i].add(mMenuItem[j]);
+				}
+			}
+			else {
+				xMenuItem = new JMenuItem(SYS_MENU_TEXT);
+				xMenuItem.addActionListener(listener);
+				mainMenu[i].add(xMenuItem);
+			}
+
+		}
+
+	}
+
+	
+	static void createInitPanel(String message) {
+		JLabel startLabel;
+
+		initPanel = new JPanel();
+		contentPane.add(initPanel,BorderLayout.CENTER); 		
+		initPanel.setSize(500, 350);
+		initPanel.setLayout(new GridLayout(2,1));
+		startLabel = new JLabel(message);
+		initPanel.add(startLabel);
+	}
+	
+	static void createReservePanel() {
+		headLabel = new JLabel("예매할 영화를 선택하세요.");
+		reservePanel = new JPanel();
+		reservePanel.setSize(500, 350);
+		reservePanel.setLayout(new BorderLayout());
+		
+		reservePanel.add(headLabel,BorderLayout.NORTH);	
+		ArrayList<Movie1> movies = Movie1.findAll();
+		String[] moviesList = new String[movies.size()];
+		for(int i=0; i < movies.size(); i++) {
+			moviesList[i] = movies.get(i).toString();
+		}
+
+		movieList = new JList<String>(moviesList);
+		movieList.setFixedCellWidth(300);
+		movieList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		movieList.addListSelectionListener(listener);
+		movieList.setVisible(true);
+		movieListScroll = new JScrollPane(movieList);
+		reservePanel.add(movieListScroll, BorderLayout.CENTER);		
+		
+		contentPane.add(reservePanel,BorderLayout.CENTER);
+	}
+	
+	static void createReserveCheckPanel() { 
+		reserveCheckPanel = new JPanel();
+		reserveCheckPanel.setSize(500, 350);
+		reserveCheckPanel.setLayout(new BorderLayout());
+		
+		rcHeadLabel = new JLabel("확인할 예약번호를 입력하세요");
+		
+		rcPanel = new JPanel();	
+		rcPanel.setLayout(new FlowLayout(FlowLayout.CENTER,30,10));
+		rcGuideLabel = new JLabel("예약번호");
+		rcTextField = new JTextField(20);
+		rcPanel.add(rcGuideLabel);
+		rcPanel.add(rcTextField);
+		JButton btn = new JButton("예약확인");
+		btn.addActionListener(listener);
+		rcPanel.add(btn);
+		
+		reserveCheckPanel.add(rcHeadLabel,BorderLayout.NORTH);	
+		reserveCheckPanel.add(rcPanel, BorderLayout.CENTER);	
+		reserveCheckPanel.setVisible(true);
+		contentPane.add(reserveCheckPanel,BorderLayout.CENTER);
+	}
+	
+	static void createCancelReservePanel() { 
+		cancelPanel = new JPanel();
+		cancelPanel.setSize(500, 350);
+		cancelPanel.setLayout(new BorderLayout());
+		
+		canHeadLabel = new JLabel("삭제할 예약번호를 입력하세요");
+		
+		canPanel = new JPanel();	
+		canPanel.setLayout(new FlowLayout(FlowLayout.CENTER,30,10));
+		canGuideLabel = new JLabel("예약번호");
+		canTextField = new JTextField(20);
+		canPanel.add(canGuideLabel);
+		canPanel.add(canTextField);
+		JButton btn = new JButton("예약삭제");
+		btn.addActionListener(listener);
+		canPanel.add(btn);
+		
+		cancelPanel.add(canHeadLabel,BorderLayout.NORTH);	
+		cancelPanel.add(canPanel, BorderLayout.CENTER);	
+		cancelPanel.setVisible(true);
+		contentPane.add(cancelPanel,BorderLayout.CENTER);
+	}
+
+	static void createLoginPanel() { 
+		loginPanel = new JPanel();
+		loginPanel.setSize(500, 350);
+		loginPanel.setLayout(new BorderLayout());
+		
+		loginHeadLabel = new JLabel("관리자 모드 전환");
+		
+		logPanel = new JPanel();	
+		logPanel.setLayout(new FlowLayout(FlowLayout.CENTER,30,10));
+		loginGuideLabel = new JLabel("비밀번호");
+		adminPwd = new JPasswordField(20);
+		logPanel.add(loginGuideLabel);
+		logPanel.add(adminPwd);
+		JButton btn = new JButton("login");
+		btn.addActionListener(listener);
+		logPanel.add(btn);
+		
+		loginPanel.add(loginHeadLabel,BorderLayout.NORTH);	
+		loginPanel.add(logPanel, BorderLayout.CENTER);	
+		loginPanel.setVisible(true);
+		contentPane.add(loginPanel,BorderLayout.CENTER);
+	}
+
+	static void createMListPanel() {
+		mHeadLabel = new JLabel("등록된 영화 목록");
+		mListPanel = new JPanel();
+		mListPanel.setSize(500, 350);
+		mListPanel.setLayout(new BorderLayout());
+		
+		mListPanel.add(mHeadLabel,BorderLayout.NORTH);	
+		ArrayList<Movie1> movies = Movie1.findAll();
+		String[] moviesList = new String[movies.size()];
+		for(int i=0; i < movies.size(); i++) {
+			moviesList[i] = movies.get(i).toString();
+		}
+
+		movieList = new JList<String>(moviesList);
+		movieList.setFixedCellWidth(300);
+		movieList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		//movieList.addListSelectionListener(listener);
+		movieList.setVisible(true);
+		mMovieListScroll = new JScrollPane(movieList);
+		mListPanel.add(mMovieListScroll, BorderLayout.CENTER);		
+		
+		contentPane.add(mListPanel,BorderLayout.CENTER);
+	}
+	
+	static void createMovieAddPanel() { 
+		mMovieAddPanel = new JPanel();
+		mMovieAddPanel.setSize(500, 350);
+		mMovieAddPanel.setLayout(new BorderLayout());
+		
+		mMovieAddHeadLabel = new JLabel("추가할 정화 정보를 입력하세요");
+		
+		mMoviePanel = new JPanel();	
+		mMoviePanel.setLayout(null  );                   //new GridLayout(3,2));
+		mMovieAddMNameGuideLabel = new JLabel("영화제목");
+		mMovieNameTextField = new JTextField(20);	
+		mMovieAddMGanreGuideLabel = new JLabel("영화장르");	
+		mMovieGenreTextField = new JTextField(20);
+		JButton btn1 = new JButton("추가확인");
+		JButton btn2 = new JButton("추가취소");
+		btn1.addActionListener(listener);
+		btn2.addActionListener(listener);
+		
+		mMovieAddMNameGuideLabel.setBounds(10, 20, 50, 30);
+		mMovieNameTextField.setBounds(80, 20, 250, 30);
+		mMovieAddMGanreGuideLabel.setBounds(10, 70, 50, 30);
+		mMovieGenreTextField.setBounds(80, 70, 250, 30);
+		btn1.setBounds(10, 120, 100, 30);
+		btn2.setBounds(200, 120, 100, 30);
+		
+		mMoviePanel.add(mMovieAddMNameGuideLabel);
+		mMoviePanel.add(mMovieNameTextField);
+		mMoviePanel.add(mMovieAddMGanreGuideLabel);		
+		mMoviePanel.add(mMovieGenreTextField);
+		mMoviePanel.add(btn1);
+		mMoviePanel.add(btn2);
+		
+		mMovieAddPanel.add(mMovieAddHeadLabel,BorderLayout.NORTH);	
+		mMovieAddPanel.add(mMoviePanel, BorderLayout.CENTER);	
+		mMovieAddPanel.setVisible(true);
+		contentPane.add(mMovieAddPanel,BorderLayout.CENTER);
+	}
+	
+	static void createMovieDropPanel() {
+		mMovieDropHeadLabel = new JLabel("삭제할 영화를 선택하세요.");
+		mMovieDropPanel = new JPanel();
+		mMovieDropPanel.setSize(500, 350);
+		mMovieDropPanel.setLayout(new BorderLayout());
+		
+		mMovieDropPanel.add(mMovieDropHeadLabel,BorderLayout.NORTH);	
+		ArrayList<Movie1> movies = Movie1.findAll();
+		String[] moviesList = new String[movies.size()];
+		for(int i=0; i < movies.size(); i++) {
+			moviesList[i] = movies.get(i).toString();
+		}
+
+		movieListForDrop = new JList<String>(moviesList);
+		movieListForDrop.setFixedCellWidth(300);
+		movieListForDrop.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		movieListForDrop.addListSelectionListener(listenerForDrop);
+		movieListForDrop.setVisible(true);
+		movieListScroll = new JScrollPane(movieListForDrop);
+		mMovieDropPanel.add(movieListScroll, BorderLayout.CENTER);		
+		
+		contentPane.add(mMovieDropPanel,BorderLayout.CENTER);
+	}
+	
+	public StartSwing() {
+		listener = new MenuActionListener1();
+		listenerForDrop = new MovieDropListener(); 
+		
+		setTitle("영화 예매 시스템");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		contentPane = (JPanel) getContentPane();
+
+		contentPane.setLayout(new BorderLayout());
+		createMenu();
+		createInitPanel("영화예매 시스템에 오신 것을 환영합니다.");
+		
+		setSize(500,400);
+		contentPane.setVisible(true);
+		
+	}
+	
+    public static void change(String panelName) { // 패널 1번과 2번 변경 후 재설정
+    	 
+        if (panelName.equals("r")) {
+        	contentPane.removeAll();
+    		createMenu();
+    		createReservePanel();
+    		contentPane.add(reservePanel,BorderLayout.CENTER);
+    		contentPane.revalidate();
+    		contentPane.repaint();   		
+        } else if (panelName.equals("rc")) {
+        	contentPane.removeAll();
+    		createMenu();
+    		createReserveCheckPanel();
+    		contentPane.add(reserveCheckPanel,BorderLayout.CENTER);
+    		contentPane.revalidate();
+    		contentPane.repaint();   
+        } else if (panelName.equals("can")) {
+        	contentPane.removeAll();
+    		createMenu();
+    		createCancelReservePanel();
+    		contentPane.add(cancelPanel,BorderLayout.CENTER);
+    		contentPane.revalidate();
+    		contentPane.repaint();   	
+        } else if (panelName.equals("login")) {
+        	contentPane.removeAll();
+    		createMenu();
+    		if(!mode) {
+    			createLoginPanel();
+    			contentPane.add(loginPanel,BorderLayout.CENTER);
+    		}
+    		else {
+    			createInitPanel("영화예매 시스템 관리자 모드입니다.");
+    		}
+    		contentPane.revalidate();
+    		contentPane.repaint();   		
+        } else if (panelName.equals("logout")) {
+			StartSwing.mMenuItem[0].setText("로그인");
+			mode = false;
+	    	contentPane.removeAll();    	
+			createMenu();
+			if(!mode) {
+				createLoginPanel();
+				contentPane.add(loginPanel,BorderLayout.CENTER);
+			}
+			else {
+				createInitPanel("영화예매 시스템 관리자 모드입니다.");
+			}
+			contentPane.revalidate();
+			contentPane.repaint();   		
+	    } else if (panelName.equals("list")) {
+	    	contentPane.removeAll();    
+    		createMenu();
+    		createMListPanel();
+    		contentPane.add(mListPanel,BorderLayout.CENTER);
+    		contentPane.revalidate();
+    		contentPane.repaint();   		
+	    } else if (panelName.equals("add")) {
+	    	contentPane.removeAll();    
+    		createMenu();
+    		createMovieAddPanel();
+    		contentPane.add(mMovieAddPanel,BorderLayout.CENTER);
+    		contentPane.revalidate();
+    		contentPane.repaint();   		
+	    } else if (panelName.equals("drop")) {
+	    	contentPane.removeAll();    
+    		createMenu();
+    		createMovieDropPanel();
+    		contentPane.add(mMovieDropPanel,BorderLayout.CENTER);
+    		contentPane.revalidate();
+    		contentPane.repaint();   		
+	    }else {
+            
+        }
+    }
+ 
+	
+	public static void main(String[] args) {
+		//new StartSwing();
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					StartSwing frame = new StartSwing();
+					frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+
+	}
+}
+
+-------------------------------------------------
+MenuActionListener1.java
+_______________________________________________
+
+package ExpertWin;
+
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import Expert.Reservation;
+import Expert.Seats;
+
+public class MenuActionListener1 implements ActionListener, ListSelectionListener {
+
+	public MenuActionListener1() {
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+		Movie1 selectedMovie; 
+		
+		if(!e.getValueIsAdjusting()) {	//이거 없으면 mouse 눌릴때, 뗄때 각각 한번씩 호출되서 총 두번 호출
+				StartSwing.movieId = StartSwing.movieList.getSelectedValue().substring(1, 11);
+				try {
+					selectedMovie = Movie1.findById(StartSwing.movieId);
+					ArrayList<Reservation> reservations = Reservation.findByMovieId(StartSwing.movieId);
+					Seats1 newSeat = new Seats1(reservations);
+					StartSwing.headLabel.setText("선택한 영화: " + selectedMovie.getTitle()+"...좌석을 선택하세요.");
+					StartSwing.movieName = selectedMovie.getTitle();
+					StartSwing.movieListScroll.setVisible(false);
+				}catch(IOException e1) {
+					System.out.println("파일 입출력에서 문제가 생겼습니다.");
+				}catch(Exception e1) {
+					System.out.printf(">> 예매에 실패하였습니다: %s\n", e1.getMessage());
+				}
+		}
+
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		String cmd = e.getActionCommand();
+		switch(cmd) {
+		case "예매하기": reserve(); break;
+		case "확인하기": StartSwing.change("rc"); break;  // reserveCheck(); break;
+		case "취소하기": StartSwing.change("can"); break;
+		case "로그인" :  StartSwing.change("login"); break;
+		case "로그아웃": StartSwing.change("logout"); break;
+		case "영화목록": StartSwing.change("list"); break;
+		case "영화추가": StartSwing.change("add"); break;
+		case "영화삭제": StartSwing.change("drop"); break;
+		case "예매목록":
+		case "예매삭제":
+		case "예약확인": reserveChecking();break;                      //예약확인 화면의 확인 버턴 핸들러
+		case "예약삭제": cancelReservvation();break;                      //예약확인 화면의 확인 버턴 핸들러
+		case "login" : loginAdmin(); break;
+		case "추가확인": addNewMovie(true); break;
+		case "추가취소": addNewMovie(false); break;
+		case "종료":
+			JOptionPane.showMessageDialog(null, "프로그램을 종료합니다","System Message", JOptionPane.INFORMATION_MESSAGE);
+			System.exit(0);
+			break;
+			
+		}
+		
+
+	}
+	
+	private void reserve() {
+		StartSwing.change("r");
+	}
+	
+	private void addNewMovie(boolean option) {
+		String mName, mGanre;
+		mName = StartSwing.mMovieNameTextField.getText();
+		mGanre = StartSwing.mMovieGenreTextField.getText();		
+		Movie1 movie;
+		
+		if(option) {
+			movie = new Movie1(mName, mGanre);
+			try {
+				movie.save();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			JOptionPane.showInternalMessageDialog(null,mName + "를 추가하였습니다.","영화추가",JOptionPane.INFORMATION_MESSAGE);
+			StartSwing.mMovieNameTextField.setText("");
+			StartSwing.mMovieGenreTextField.setText("");
+		}
+		else {
+			JOptionPane.showInternalMessageDialog(null,"영화 추가를 취소합니다.","영화추가",JOptionPane.INFORMATION_MESSAGE);
+			StartSwing.mMovieNameTextField.setText("");
+			StartSwing.mMovieGenreTextField.setText("");
+		}
+	}
+	
+	private void reserveChecking(){
+		Reservation findReservation = null;
+		String reNumber = StartSwing.rcTextField.getText();
+		try {
+			findReservation = Reservation.findById(reNumber);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if(findReservation != null) {
+			String message = findReservation.toString(); 
+			JOptionPane.showInternalMessageDialog(null,message,"예약 정보",JOptionPane.INFORMATION_MESSAGE);
+		}
+		else {
+			JOptionPane.showInternalMessageDialog(null,reNumber+" 예약정보가 없습니다.","예약 정보",JOptionPane.INFORMATION_MESSAGE);
+			StartSwing.rcTextField.setText("");
+		}
+	}
+
+	private void cancelReservvation(){
+		Reservation findReservation = null;
+		String reNumber = StartSwing.canTextField.getText();
+		try {
+			findReservation = Reservation.findById(reNumber);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if(findReservation != null) {
+			String message = findReservation.toString(); 
+			int choice = JOptionPane.showConfirmDialog(null, message+"을 삭제할까요?","Confirm", JOptionPane.YES_NO_OPTION);
+			if(choice == JOptionPane.YES_OPTION) {
+				try {
+					Reservation.cancel(reNumber);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		else {
+			JOptionPane.showInternalMessageDialog(null,reNumber+" 예약정보가 없습니다.","예약 정보",JOptionPane.INFORMATION_MESSAGE);
+			StartSwing.rcTextField.setText("");
+		}
+
+	}
+
+	private void loginAdmin(){
+		String pwd = new String(StartSwing.adminPwd.getPassword());
+		if(pwd.equals( "abcd") ) {
+			StartSwing.mMenuItem[0].setText("로그아웃");
+			StartSwing.mode = true;
+			StartSwing.change("login");
+		}
+		
+	}
+}
+
+
+----------------------------------------------------------------
+MovieDropListener.java
+------------------------------------------------------------
+
+package ExpertWin;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import Expert.Reservation;
+
+public class MovieDropListener implements ListSelectionListener {
+
+	public MovieDropListener() {
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+		Movie1 selectedMovie; 
+		
+		if(!e.getValueIsAdjusting()) {	//이거 없으면 mouse 눌릴때, 뗄때 각각 한번씩 호출되서 총 두번 호출
+				StartSwing.movieId = StartSwing.movieListForDrop.getSelectedValue().substring(1, 11);
+				try {
+					selectedMovie = Movie1.findById(StartSwing.movieId);
+					String message = selectedMovie.toString(); 
+					int choice = JOptionPane.showConfirmDialog(null, message+"을 삭제할까요?","Confirm", JOptionPane.YES_NO_OPTION);
+					if(choice == JOptionPane.YES_OPTION) {
+						Movie1.delete(StartSwing.movieId);
+						try {
+							ArrayList<Reservation> reservations = Reservation.findByMovieId(selectedMovie.getId());
+							for(Reservation temp: reservations) {
+								Reservation.cancel(String.valueOf(temp.getId()));
+							}
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+					StartSwing.change("drop");
+//					ArrayList<Reservation> reservations = Reservation.findByMovieId(StartSwing.movieId);
+//					StartSwing.movieName = selectedMovie.getTitle();
+//					StartSwing.movieListScroll.setVisible(false);
+				}catch(IOException e1) {
+					System.out.println("파일 입출력에서 문제가 생겼습니다.");
+				}catch(Exception e1) {
+					System.out.printf(">> 예매에 실패하였습니다: %s\n", e1.getMessage());
+				}
+
+		}
+
+
+	}
+
+}
+
+-------------------------------------------------
+Movie1.java
+------------------------------------------------------
+
+package ExpertWin;
+import java.io.*;
+import java.time.Instant;
+import java.util.ArrayList;
+
+public class Movie1 {
+
+	private long id;
+	private String title;
+	private String genre;
+	private static final File file = new File("movies.txt");
+	
+	public Movie1(long id, String title, String genre) {
+		this.id = id;
+		this.title = title;
+		this.genre = genre;
+	}
+	
+	public static ArrayList<Movie1> findAll() {
+		ArrayList<Movie1> movies = new ArrayList<Movie1>();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			String line = null;
+			
+			while( (line = br.readLine()) != null) {
+				String[] temp = line.split(",");
+				Movie1 m = new Movie1(Long.parseLong(temp[0]), temp[1], temp[2]);
+				movies.add(m);
+			}
+			br.close();		
+		}catch(IOException e) {
+			System.out.println("파일 입출력에서 문제가 생겼습니다.");
+		}catch(Exception e) {
+			System.out.printf(">> 예매에 실패하였습니다: %s\n", e.getMessage());
+		}
+		return movies;
+	}
+	
+	public String toString() {
+		return String.format("[%d]: %s(%s)", id, title, genre);
+	}
+	
+	public Movie1( String title, String genre) {
+		this.id = Instant.now().getEpochSecond();
+		this.title = title;
+		this.genre = genre;
+	}
+	
+	public void save() throws IOException {
+		FileWriter fw = new FileWriter(file, true);
+		fw.write(this.toFileString() + "\n");
+		fw.close();
+	}
+	
+	private String toFileString() {
+		return String.format("%d,%s,%s", id, title, genre);
+	}
+	
+	public static void delete(String movieIdStr) throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String text = "";
+		String line = null;
+		
+		while((line=br.readLine()) != null) {
+			String[] temp = line.split(",");
+			if(movieIdStr.equals(temp[0])) {
+				continue;
+			}
+			text += line+"\n";
+		}
+		br.close();
+		
+		FileWriter fw = new FileWriter(file);
+		fw.write(text);
+		fw.close();
+	}
+	
+	public static Movie1 findById(String movieIdStr) throws IOException {
+		Movie1 movie = null;
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String line = null;
+		
+		while((line=br.readLine()) != null) {
+			String[] temp = line.split(",");
+			if(movieIdStr.equals(temp[0])) {
+				movie = new Movie1(Long.parseLong(temp[0]),temp[1],temp[2]);
+				break;
+			}
+		}
+		
+		br.close();
+		return movie;
+	}
+	
+	public String getTitle() {
+		return title;
+	}
+
+	public String getId() {
+		return String.valueOf(id);
+	}
+
+}
+
+------------------------------------------------------------
+Seats1.java
+------------------------------------------
+package ExpertWin;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.regex.Pattern;
+
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+import Expert.Reservation;
+
+public class Seats1  implements ActionListener  {
+	public static final int MAX_ROW = 5;
+	public static final int MAX_COL = 9;
+	String selectedSeatNumber;
+	
+	public Seats1(ArrayList<Reservation> reservations) {
+		String[] seatNumber = {" ","S","C","R","E","E","N"," "," ",
+								"A-1","A-2","A-3","A-4","A-5","A-6","A-7","A-8","A-9",
+								"B-1","B-2","B-3","B-4","B-5","B-6","B-7","B-8","B-9",
+								"C-1","C-2","C-3","C-4","C-5","C-6","C-7","C-8","C-9",
+								"D-1","D-2","D-3","D-4","D-5","D-6","D-7","D-8","D-9",
+								"E-1","E-2","E-3","E-4","E-5","E-6","E-7","E-8","E-9"};
+		JButton btn;
+		
+		StartSwing.seatPanel = new JPanel();
+		StartSwing.seatPanel.setLayout(new GridLayout(6,9,10,10));
+		
+		for(int i=0; i < seatNumber.length; i++) {
+			btn = new JButton(seatNumber[i]);
+			btn.addActionListener(this);
+			if(i < 9) {
+				btn.setBackground(new Color(80,80,80));
+				btn.setEnabled(false);
+			}else {
+				for(int j=0; j < reservations.size(); j++)	{
+					Reservation r = reservations.get(j);
+					String seatName = r.getSeatName();
+					if( i == mark(seatName)) {
+						System.out.println(i);
+						btn.setText("N/A");
+						btn.setBackground(new Color(255,0,0));
+						btn.setEnabled(false);
+					}
+				}
+			}
+			StartSwing.seatPanel.add(btn);
+		}
+		StartSwing.reservePanel.add(StartSwing.seatPanel, BorderLayout.CENTER);		
+		
+	}
+	
+	public int mark(String seatName) {
+		char[] temp = seatName.toCharArray();
+		int row = temp[0] -'A';
+		int col = temp[2] - '1';
+		return (row+1)*MAX_COL + col;
+
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		selectedSeatNumber = e.getActionCommand();
+		Reservation r = new Reservation(Long.parseLong(StartSwing.movieId), StartSwing.movieName, selectedSeatNumber);
+		try {
+			r.save();
+		} catch (IOException e1) {
+			System.out.println("예약을 저장에 실패하였습니다.");
+		}
+		String message = StartSwing.movieName+"(" + selectedSeatNumber + ")의 예약번호: " + r.getId();
+		JOptionPane.showInternalMessageDialog(null,message,"예약 정보",JOptionPane.INFORMATION_MESSAGE);
+		StartSwing.seatPanel.setVisible(false);
+		StartSwing.movieListScroll.setVisible(true);
+		
+	}
+	
+}
+

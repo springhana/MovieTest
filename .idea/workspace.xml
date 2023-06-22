@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="1b23d562-79e3-4c5d-9f53-6ca2a6c6f880" name="변경" comment="">
+      <change beforePath="$PROJECT_DIR$/.project" beforeDir="false" afterPath="$PROJECT_DIR$/.project" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/movies.txt" beforeDir="false" afterPath="$PROJECT_DIR$/movies.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reservations.txt" beforeDir="false" afterPath="$PROJECT_DIR$/reservations.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Expert/MainMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Expert/MainMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Expert/Reservation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Expert/Reservation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Sample/SecondExample.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Sample/SecondExample.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="2QELabw7jIQmT70pmikPjcNuPwj" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "C:/Users/xksxk/OneDrive/바탕 화면/학교/3학년/3학년1학기/Spring boot"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="애플리케이션 수준" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="디폴트 작업">
+      <changelist id="1b23d562-79e3-4c5d-9f53-6ca2a6c6f880" name="변경" comment="" />
+      <created>1684913858828</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1684913858828</updated>
+      <workItem from="1684913860216" duration="81000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
