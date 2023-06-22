@@ -1,5 +1,8 @@
 # MovieTest
+<h3>※ 실행 시 나오는 첫 화면</h3>
+
 ![image](https://github.com/springhana/MovieTest/assets/97121074/144d08de-a789-4d42-9b99-fc5a65ec4aaa)
+</br>
 </hr>
 
 # 예매하기
@@ -17,7 +20,6 @@
 
 # 예매 확인하기
 
-※ 실행 시 나오는 첫 화면
 ![image](https://github.com/springhana/MovieTest/assets/97121074/00cad988-b4fe-4992-9e21-e5ddf9efc006)
 
 <h3>※ 예매확인 버튼 선택 시</h3>
