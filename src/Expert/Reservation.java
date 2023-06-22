@@ -142,7 +142,7 @@ public class Reservation {
 		return String.format("예약번호: %s, 영화제목: %s, 좌석: %s", id, movieTitle, seatName);
 	}
 	
-	private String toFileString() {
+	public String toFileString() {
 		return String.format("%d,%d,%s,%s", id, movieId, movieTitle, seatName);
 	}
 }

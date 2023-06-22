@@ -88,6 +88,7 @@ public class MainMenu extends AbstractMenu { //일반 사용자 메뉴
 		
 		try {
 			Reservation r = Reservation.findById(sc.nextLine());
+			System.out.println(r);
 			if( r != null) {
 				System.out.printf(">> [확인 완료] %s \n", r.toString());
 			}else {
